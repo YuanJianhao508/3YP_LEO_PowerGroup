@@ -11,7 +11,7 @@ from StorageAsset import StorageAsset
 # 3. Calculate required power/energy profile from storage, based on design feature
 # 4. simulate the whole system power/energy/cost and optimize
 
-my_solar_farm = SolarAsset(1000)
+my_solar_farm = SolarAsset(10000)
 # get solar profile
 solar_profile = my_solar_farm.load_profile()
 
@@ -25,7 +25,7 @@ net_nondispatchable_load = load_profile - solar_profile
 # net_nondispatchable_load = net_nondispatchable_load
 
 #get storage output
-my_storage = StorageAsset(net_nondispatchable_load,100,500)
+my_storage = StorageAsset(net_nondispatchable_load,10000,50000)
 storage_profile = my_storage.get_output().reshape(-1)
 storage_profile = pd.Series(storage_profile)
 
@@ -40,4 +40,6 @@ plt.plot(net_load)
 plt.xlabel('Time Step')
 plt.ylabel('Net Load (Energy Level)')
 plt.title('Simulation Sample Data')
+plt.savefig('e2.png')
 plt.show()
+
