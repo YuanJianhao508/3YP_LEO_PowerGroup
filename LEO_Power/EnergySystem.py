@@ -4,42 +4,51 @@ from SolarAsset import SolarAsset
 from Load import Load
 from StorageAsset import StorageAsset
 
+
 # We want
 # 1. Solar/load energy profile daily/half_hourly
 # 2. Solar/load power profile daily/half_hourly
 # With this two profile, we want
 # 3. Calculate required power/energy profile from storage, based on design feature
 # 4. simulate the whole system power/energy/cost and optimize
+class EnergySystem():
+    def __init__(self,non_dispatchable,dispatchable):
+        self.non_dispatchable = non_dispatchable
+        self.dispatchable = dispatchable
 
-my_solar_farm = SolarAsset(10000)
-# get solar profile
-solar_profile = my_solar_farm.load_profile()
+    def simulate(self):
+        pass
+
+    def visualize(self):
+        pass
+
+solar_farm = SolarAsset(30)
+solar_panel = SolarAsset(17.5)
+solar_profile = solar_farm.load_profile()+solar_panel.load_profile()
 
 # get demand profile
-my_load = Load()
-load_profile = my_load.load_profile()
+load = Load()
+load_profile = load.load_profile()
 
 
 #get ned load and feed to storage
-net_nondispatchable_load = load_profile - solar_profile
-# net_nondispatchable_load = net_nondispatchable_load
+net_nondispatchable_load = load_profile['Energy'] - solar_profile['Energy']
+
 
 #get storage output
-my_storage = StorageAsset(net_nondispatchable_load,10000,50000)
-storage_profile = my_storage.get_output().reshape(-1)
-storage_profile = pd.Series(storage_profile)
+local_battery = StorageAsset(net_nondispatchable_load,7.5,20)
+local_battery_profile = local_battery.get_output()
 
-#calculate net load
-net_load = net_nondispatchable_load - storage_profile
+net_nondispatchable_load = net_nondispatchable_load - local_battery_profile
+hydrogen = StorageAsset(net_nondispatchable_load,20,700)
+hydrogen_profile = hydrogen.get_output()
+net_nondispatchable_load = net_nondispatchable_load - hydrogen_profile
 
-#market model
-# my_market = Market(solar_profile,storage_profile,net_load)
-# cost =
 #visualize
-plt.plot(net_load)
+plt.plot(net_nondispatchable_load)
 plt.xlabel('Time Step')
 plt.ylabel('Net Load (Energy Level)')
 plt.title('Simulation Sample Data')
-plt.savefig('e2.png')
+plt.savefig('e4.png')
 plt.show()
 

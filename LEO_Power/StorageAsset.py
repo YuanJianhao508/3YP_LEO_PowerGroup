@@ -12,7 +12,6 @@ class StorageAsset():
 
     def get_output(self):
         T = len(self.nondispatchable_net_load)
-
         self.outpute = np.zeros((T, 1))
         soce = np.zeros((T, 1))
 
@@ -34,4 +33,7 @@ class StorageAsset():
             elif self.nondispatchable_net_load[j] == 0:
                 soce[j] = socval
 
+        self.outpute = np.array(self.outpute).reshape(-1)
         return self.outpute
+
+
