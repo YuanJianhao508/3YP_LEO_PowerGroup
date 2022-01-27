@@ -5,9 +5,9 @@ class SolarAsset():
         # possible design factor size, angle, power factor etc...
         self.path = '.\Data\solar.csv'
         self.capacity = capacity
-        self.unit_cost = 100
+        self.cost = 100
 
-    def load_profile(self):
+    def load_profile(self,duration=1):
         solar = pd.read_csv(self.path)
         solar['Power'] = solar['Power (MW)']
         solar['Power'] = solar['Power'] * self.capacity

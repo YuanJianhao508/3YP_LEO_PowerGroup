@@ -14,18 +14,24 @@ from tqdm import tqdm
 # 3. Calculate required power/energy profile from storage, based on design feature
 # 4. simulate the whole system power/energy/cost and optimize
 class EnergySystem():
-    def __init__(self,load,solar,storage):
+    def __init__(self,load,solar,storage,simulation_duration=1):
         self.load = load
         self.solar = solar
         self.dispatchable = storage
 
-    def simulate(self):
+    def simulate(self,full_info=False):
+        #whether output all info
+        if full_info == True:
+            generation_profile_lis = []
+            load_profile_lis = []
+            storage_profile_lis = []
         # load profile
         load = Load()
         load_profile = load.load_profile()
+        if full_info == True:
+            load_profile_lis.append(load_profile)
 
         # solar profile
-
         # for i,k in enumerate(tqdm(self.solar,leave=True,desc="Non-dispatchable Profile:")):
         for i, k in enumerate(self.solar):
             generation = SolarAsset(k)
@@ -34,6 +40,8 @@ class EnergySystem():
             else:
                 generation_profile += generation.load_profile()
 
+            if full_info == True:
+                generation_profile_lis.append(generation_profile)
 
         #dispatchable -- battery
 
@@ -43,8 +51,14 @@ class EnergySystem():
             storage = StorageAsset(net_nondispatchable_load, i[0], i[1])
             storage_profile = storage.get_output()
             net_nondispatchable_load = net_nondispatchable_load - storage_profile
-        net_nondispatchable_load = net_nondispatchable_load[:-1]
-        return net_nondispatchable_load
+            if full_info == True:
+                storage_profile_lis.append(storage_profile)
+            net_nondispatchable_load = net_nondispatchable_load[:-1]
+
+        if full_info == True:
+            return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis
+        else:
+            return net_nondispatchable_load
 
     def visualize(self,net_nondispatchable_load):
         plt.plot(net_nondispatchable_load)
