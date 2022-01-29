@@ -6,11 +6,12 @@ class StorageAsset():
         self.nondispatchable_net_load = net_load_profile
         self.power_capacity = max_power
         self.energy_capacity = max_energy
-        self.eff = 0.7
-        self.unit_cost = 50
+        self.eff_dict = {'local':0.7,'hydrogen':0.5}
+        self.eff = 0
         self.outpute = []
 
-    def get_output(self):
+    def get_output(self,asset_type='local'):
+        self.eff = self.eff_dict[asset_type]
         T = len(self.nondispatchable_net_load)
         self.outpute = np.zeros((T, 1))
         soce = np.zeros((T, 1))
@@ -27,7 +28,7 @@ class StorageAsset():
 
             elif self.nondispatchable_net_load[j] < 0:
                 self.outpute[j] = max(-self.power_capacity * 0.5, self.nondispatchable_net_load[j],
-                                 -(1 / self.eff) * (self.energy_capacity - socval))
+                                 - (1 / self.eff) * (self.energy_capacity - socval))
                 soce[j] = socval - self.eff * self.outpute[j]
 
             elif self.nondispatchable_net_load[j] == 0:

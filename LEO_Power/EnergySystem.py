@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from SolarAsset import SolarAsset
 from Load import Load
 from StorageAsset import StorageAsset
+from Market import Market
 from tqdm import tqdm
 
 
@@ -18,54 +19,55 @@ class EnergySystem():
         self.load = load
         self.solar = solar
         self.dispatchable = storage
+        self.simulation_duration = simulation_duration
 
-    def simulate(self,full_info=False):
-        #whether output all info
-        if full_info == True:
-            generation_profile_lis = []
-            load_profile_lis = []
-            storage_profile_lis = []
+    def simulate(self,info_select='net_load'):
+
+        # detailed info
+        generation_profile_lis = []
+        load_profile_lis = []
+        storage_profile_lis = []
+
         # load profile
-        load = Load()
+        load = Load(self.simulation_duration)
         load_profile = load.load_profile()
-        if full_info == True:
-            load_profile_lis.append(load_profile)
+        load_profile_lis.append(load_profile)
 
         # solar profile
-        # for i,k in enumerate(tqdm(self.solar,leave=True,desc="Non-dispatchable Profile:")):
         for i, k in enumerate(self.solar):
-            generation = SolarAsset(k)
+            generation = SolarAsset(k,self.simulation_duration)
             if i == 0:
                 generation_profile = generation.load_profile()
             else:
                 generation_profile += generation.load_profile()
 
-            if full_info == True:
-                generation_profile_lis.append(generation_profile)
+
+            generation_profile_lis.append(generation_profile)
 
         #dispatchable -- battery
-
         net_nondispatchable_load = load_profile['Energy'] - generation_profile['Energy']
-        # for i in tqdm(self.dispatchable, leave=True, desc="Dispatchable Profile:"):
         for i in self.dispatchable:
             storage = StorageAsset(net_nondispatchable_load, i[0], i[1])
             storage_profile = storage.get_output()
             net_nondispatchable_load = net_nondispatchable_load - storage_profile
-            if full_info == True:
-                storage_profile_lis.append(storage_profile)
-            net_nondispatchable_load = net_nondispatchable_load[:-1]
+            storage_profile_lis.append(storage_profile)
 
-        if full_info == True:
-            return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis
-        else:
+        #Market Simulation
+        market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis)
+        market_info =market.load_info()
+
+        if info_select == 'net_load':
             return net_nondispatchable_load
+        elif info_select == 'load_cost':
+            return net_nondispatchable_load, market_info
+        elif info_select == 'all_detail':
+            return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis
 
     def visualize(self,net_nondispatchable_load):
         plt.plot(net_nondispatchable_load)
         plt.xlabel('Time Step')
         plt.ylabel('Net Load (Energy Level)')
         plt.title('Simulation Sample Data')
-        # plt.savefig('e4.png')
         plt.show()
 
 
