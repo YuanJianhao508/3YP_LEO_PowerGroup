@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from SolarAsset import SolarAsset
+from GenerationAsset import GenerationAsset
 from Load import Load
 from StorageAsset import StorageAsset
 from Market import Market
@@ -35,7 +35,7 @@ class EnergySystem():
 
         # solar profile
         for i, k in enumerate(self.solar):
-            generation = SolarAsset(k,self.simulation_duration)
+            generation = GenerationAsset(k['size'],self.simulation_duration,k['type'])
             if i == 0:
                 generation_profile = generation.load_profile()
             else:
@@ -72,8 +72,8 @@ class EnergySystem():
 
 
 if __name__ == 'main':
-    solar_farm = SolarAsset(30)
-    solar_panel = SolarAsset(17.5)
+    solar_farm = GenerationAsset(30,duration=1,type='solar')
+    solar_panel = GenerationAsset(17.5,duration=1,type='solar')
 
     solar_profile = solar_farm.load_profile()+solar_panel.load_profile()
 

@@ -10,4 +10,5 @@ class Market():
 
 
     def load_info(self):
+
         pass

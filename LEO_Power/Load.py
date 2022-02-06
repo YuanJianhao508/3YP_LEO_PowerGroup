@@ -1,4 +1,5 @@
 import pandas as pd
+import utils
 
 class Load():
     def __init__(self,duration=1):
@@ -8,12 +9,14 @@ class Load():
     def load_profile(self):
         demand = pd.read_csv(self.path)
         demand['Energy'] = demand['Power']*0.5
-        demand = demand.drop(labels=['Unnamed: 0', "Power"], axis=1)
+        demand = demand.drop(labels=['Unnamed: 0', "Power",'Datetime'], axis=1)
         demand.drop([len(demand)-1],inplace=True)
         i = 1
         demand_p = demand.copy()
+        size = len(demand['Energy'])
         while i < self.duration:
-            demand_p['Energy'] = demand_p['Energy'] * 1.005
+            noise = utils.gaussian_noise(size, form='series', on='load', sigma=0.0001, mu=0)
+            demand_p['Energy'] = demand_p['Energy'] * 1.005 + noise
             demand = pd.concat([demand, demand_p], axis=0, ignore_index=True)
             i+=1
         return demand

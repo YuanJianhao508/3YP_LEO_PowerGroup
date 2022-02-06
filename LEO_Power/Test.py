@@ -1,11 +1,11 @@
-from SolarAsset import SolarAsset
+from GenerationAsset import GenerationAsset
 from Load import Load
 
-# solar = SolarAsset(100,1)
+# solar = GenerationAsset(100,2,'solar')
 # solar_profile = solar.load_profile()
 # print(solar_profile)
 # #
-myload = Load(1)
+myload = Load(2)
 
 demand = myload.load_profile()
 print(demand)
