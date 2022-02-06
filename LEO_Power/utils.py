@@ -32,6 +32,8 @@ def gaussian_noise(size,form='np',on='solar',sigma=0.05,mu=0):
 
     if form == 'series':
         noise = pd.Series(noise)
-
     return noise
+
+
+
 

@@ -12,3 +12,16 @@ class Market():
     def load_info(self):
 
         pass
+
+    def installation_cost(generation, storage):
+        install_cost = 0
+        for i in generation:
+            if i['type'] == 'solar':
+                install_cost += 8800 * i['size']
+            elif i['type'] == 'wind':
+                install_cost += 8800 * i['size']
+
+        for i in storage:
+            install_cost += 12000 * i[0]
+
+        return install_cost

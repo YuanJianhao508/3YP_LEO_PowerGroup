@@ -52,14 +52,23 @@ class EnergySystem():
             net_nondispatchable_load = net_nondispatchable_load - storage_profile
             storage_profile_lis.append(storage_profile)
 
-        #Market Simulation
-        market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis)
-        market_info =market.load_info()
+        #metric
+        posnp = sum(np.maximum(net_nondispatchable_load, 0))
+        negnp = sum(np.minimum(net_nondispatchable_load, 0))
+        fc =  negnp * 90 - posnp * 160 * 1.5 - Market.installation_cost(self.solar,self.dispatchable)
+
+        metric = fc
+
+        # #Market Simulation
+        # market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis)
+        # market_info =market.load_info()
 
         if info_select == 'net_load':
             return net_nondispatchable_load
+        elif info_select == 'metric':
+            return metric
         elif info_select == 'load_cost':
-            return net_nondispatchable_load, market_info
+            return net_nondispatchable_load, metric
         elif info_select == 'all_detail':
             return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis
 
