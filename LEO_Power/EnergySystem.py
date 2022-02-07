@@ -7,13 +7,6 @@ from StorageAsset import StorageAsset
 from Market import Market
 from tqdm import tqdm
 
-
-# We want
-# 1. Solar/load energy profile daily/half_hourly
-# 2. Solar/load power profile daily/half_hourly
-# With this two profile, we want
-# 3. Calculate required power/energy profile from storage, based on design feature
-# 4. simulate the whole system power/energy/cost and optimize
 class EnergySystem():
     def __init__(self,load,solar,storage,simulation_duration=1):
         self.load = load
@@ -31,7 +24,7 @@ class EnergySystem():
         # load profile
         load = Load(self.simulation_duration)
         load_profile = load.load_profile()
-        load_profile_lis.append(load_profile)
+        load_profile_lis.append({'load':[1],'profile':load_profile})
 
         # solar profile
         for i, k in enumerate(self.solar):
@@ -42,7 +35,7 @@ class EnergySystem():
                 generation_profile += generation.load_profile()
 
 
-            generation_profile_lis.append(generation_profile)
+            generation_profile_lis.append({'type-size':[k['type'],k['size']],'profile':generation_profile})
 
         #dispatchable -- battery
         net_nondispatchable_load = load_profile['Energy'] - generation_profile['Energy']
@@ -50,18 +43,11 @@ class EnergySystem():
             storage = StorageAsset(net_nondispatchable_load, i[0], i[1])
             storage_profile = storage.get_output()
             net_nondispatchable_load = net_nondispatchable_load - storage_profile
-            storage_profile_lis.append(storage_profile)
+            storage_profile_lis.append({'capacity:power/energy':[i[0],i[1]],'profile':storage_profile})
 
-        #metric
-        posnp = sum(np.maximum(net_nondispatchable_load, 0))
-        negnp = sum(np.minimum(net_nondispatchable_load, 0))
-        fc =  negnp * 90 - posnp * 160 * 1.5 - Market.installation_cost(self.solar,self.dispatchable)
-
-        metric = fc
-
-        # #Market Simulation
-        # market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis)
-        # market_info =market.load_info()
+        #Market Simulation
+        market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis,self.solar,self.dispatchable,self.simulation_duration)
+        metric = market.integrated_financial_cost()
 
         if info_select == 'net_load':
             return net_nondispatchable_load
@@ -70,7 +56,7 @@ class EnergySystem():
         elif info_select == 'load_cost':
             return net_nondispatchable_load, metric
         elif info_select == 'all_detail':
-            return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis
+            return net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis,metric
 
     def visualize(self,net_nondispatchable_load):
         plt.plot(net_nondispatchable_load)
