@@ -7,10 +7,11 @@ class GenerationAsset():
     def __init__(self,capacity,duration=1,type='solar'):
         # possible design factor size, angle, power factor etc...
         self.solar_path = '.\Data\solar.csv'
-        self.wind_path = '.\Data\solar.csv'
+        self.wind_path = '.\Data\wind.csv'
         self.capacity = capacity
         self.duration = duration
         self.type = type
+        self.wearout = {'solar':0.994,'wind':0.984}
 
     def load_profile(self):
         if self.type == 'solar':
@@ -26,7 +27,7 @@ class GenerationAsset():
         size = len(solar['Energy'])
         while i < self.duration:
             noise = utils.gaussian_noise(size, form='series', on='solar',sigma=0.0001, mu=0)
-            solar_p['Energy'] = solar_p['Energy'] * 0.990 + noise
+            solar_p['Energy'] = solar_p['Energy'] * self.wearout[self.type] + noise
             solar = pd.concat([solar, solar_p], axis=0, ignore_index=True)
             i+=1
         return solar

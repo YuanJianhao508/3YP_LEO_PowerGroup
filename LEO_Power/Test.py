@@ -12,7 +12,7 @@ from EnergySystem import EnergySystem
 # demand = myload.load_profile()
 # print(demand)
 
-solar = [{'size':30,'type':'solar'}]
+solar = [{'size':30,'type':'sola'}]
 load = True
 storage = [[16,120]]
 LEO = EnergySystem(load,solar,storage,5)

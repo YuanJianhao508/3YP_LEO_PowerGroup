@@ -10,17 +10,17 @@ import matplotlib.pyplot as plt
 def basic_simulation__visualization(load,solar,storage):
     LEO = EnergySystem(load,solar,storage,5)
     [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = LEO.simulate('all_detail')
-    return [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis]
+    return [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric]
 
-solar = [{'size':30,'type':'solar'}]
+solar = [{'size':17.5,'type':'solar'},{'size':0,'type':'wind'}]
 load = True
-storage = [[16,120]]
+storage = [[160,3200]]
 
-[net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis] = basic_simulation__visualization(load,solar,storage)
-load_profile = load_profile_lis[0]['Energy'].to_numpy()
-generation_profile = generation_profile_lis[0]['Energy'].to_numpy()
+[net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = basic_simulation__visualization(load,solar,storage)
+load_profile = load_profile_lis[0]['profile']['Energy'].to_numpy()
+generation_profile = generation_profile_lis[0]['profile']['Energy'].to_numpy()
 net_profile = net_profile.to_numpy()
-storage_profile = storage_profile_lis[0]
+storage_profile = storage_profile_lis[0]['profile']
 length = len(net_profile)
 mod = length%1440
 
@@ -39,20 +39,8 @@ ax1.set_xlabel("Monthly period")
 ax1.set_title("Energy State of Assets over 5 years")
 ax1.legend()
 plt.show()
-# # plot breakdown of asset contribution to net load
-# fig, ax1 = plt.subplots(figsize=(15,7))
-# for asset_group, colours, types in zip(assets_by_type, asset_colours, asset_types):
-#     asset_outputs = np.array([asset.output.flatten() for asset in asset_group])
-#     ax1.stackplot(date_index, asset_outputs, colors=colours, alpha=0.5, labels=types)
 #
-# ax1.plot(net_profile, '--r', label='Net Load')
-# ax1.set_ylabel("Energy (kWh)")
-# ax1.set_xlabel("Time ")
-# ax1.set_title("Energy use by asset type")
-# ax1.set_xlim((datetime.datetime(2017,4,10), datetime.datetime(2017,4,11)))
-# ax1.legend()
-# plt.show()
-
+plt.plot(storage_profile)
 #
 # #grid search 2d test
 # # #Run
@@ -155,4 +143,4 @@ plt.show()
 # ax3.set_title("Setting Refinement")
 # ax3.legend()
 # plt.show()
-# print(solar_lis[-1]+wind_lis[-1],storage_plis[-1],storage_elis[-1])
+print(solar_lis[-1]+wind_lis[-1],storage_plis[-1],storage_elis[-1])

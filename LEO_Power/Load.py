@@ -11,6 +11,7 @@ class Load():
         demand['Energy'] = demand['Power']*0.5
         demand = demand.drop(labels=['Unnamed: 0', "Power",'Datetime'], axis=1)
         demand.drop([len(demand)-1],inplace=True)
+
         i = 1
         demand_p = demand.copy()
         size = len(demand['Energy'])
@@ -20,6 +21,9 @@ class Load():
             demand = pd.concat([demand, demand_p], axis=0, ignore_index=True)
             i+=1
         return demand
+
+    def new_load_profile(self):
+        pass
 
 if __name__ == 'main':
     myload=Load()

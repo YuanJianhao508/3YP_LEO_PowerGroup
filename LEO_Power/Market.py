@@ -14,6 +14,7 @@ class Market():
         self.duration = duration
 
 
+
     def integrated_financial_cost(self):
         return self.running_cost()-self.installation_cost()
 
@@ -37,6 +38,9 @@ class Market():
             install_cost += 12000 * self.duration * i[0]
 
         return install_cost
+
+    def tariff(self):
+        pass
 
     def see_state(self):
         print(self.net_load_profile)

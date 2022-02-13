@@ -26,7 +26,7 @@ class EnergySystem():
         load_profile = load.load_profile()
         load_profile_lis.append({'load':[1],'profile':load_profile})
 
-        # solar profile
+        # generation profile
         for i, k in enumerate(self.solar):
             generation = GenerationAsset(k['size'],self.simulation_duration,k['type'])
             if i == 0:
