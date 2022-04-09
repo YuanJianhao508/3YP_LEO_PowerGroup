@@ -3,144 +3,242 @@ import Optimizer as op
 from EnergySystem import EnergySystem
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import utils
+
+plt.style.use("fivethirtyeight")  # 538样式
+# plt.savefig('books_read.png')
 
 # Basic simulation
 
-
-def basic_simulation__visualization(load,solar,storage):
-    LEO = EnergySystem(load,solar,storage,5)
+def basic_simulation(load,solar,storage,duration):
+    LEO = EnergySystem(load,solar,storage,duration)
     [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = LEO.simulate('all_detail')
     return [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric]
 
-solar = [{'size':17.5,'type':'solar'},{'size':0,'type':'wind'}]
-load = True
-storage = [[160,3200]]
+#Version1
+# solar = [{'size':17.5,'type':'solar'},{'size':20,'type':'solar'}]
+# load = 3500
+# storage = [[2,15,'local'],[10,5000,'hydrogen']]
+# g_labels = ['Rooftop Solar','Solar Farm']
+# s_labels = ['Local Battery','Hydrogen']
+# duration = 5
 
-[net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = basic_simulation__visualization(load,solar,storage)
+# SGD
+solar = [{'size':2,'type':'solarPVT'},{'size':11,'type':'solar'},{'size':5,'type':'wind'}]
+load = 3500
+storage = [[7.4,32,'local']]
+g_labels = ['Rooftop PVT','Solar Farm PV','Wind']
+s_labels = ['Local Battery']
+duration = 1
+
+#GS
+# solar = [{'size':2,'type':'solarPVT'},{'size':10,'type':'solar'},{'size':5,'type':'wind'}]
+# load = 3500
+# storage = [[4,40,'local']]
+# g_labels = ['PVT','PV','Wind']
+# s_labels = ['Local Battery']
+# duration = 1
+
+[net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = basic_simulation(load,solar,storage,duration)
+
 load_profile = load_profile_lis[0]['profile']['Energy'].to_numpy()
-generation_profile = generation_profile_lis[0]['profile']['Energy'].to_numpy()
 net_profile = net_profile.to_numpy()
-storage_profile = storage_profile_lis[0]['profile']
 length = len(net_profile)
-mod = length%1440
+interval = 1440
+mod = length%interval
+#
+#
+#
+# Long-term Vis
+# g_lis =[]
+# for i in generation_profile_lis:
+#     # print(i)
+#     k = i['profile']['Energy'].to_numpy()
+#     # print(k)
+#     g_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
+# s_lis = []
+# for i in storage_profile_lis:
+#     k = -i['profile']
+#     s_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
+#
+#
+#
+#
+# net_profile_year = net_profile[:-mod].reshape(-1,interval).sum(axis=1)
+# load_profile_year = load_profile[:-mod].reshape(-1,interval).sum(axis=1)
+#
+#
+# # print(load_profile_year)
+#
+# date_index = ['Jan','Feb','Mar','Apr','May','June','July','Aug','Sept','Oct','Nov','Dec']
+#
+# # date_index = np.arange(60)
+#
+#
+# pv_colourmap = cm.get_cmap("Wistia")
+# load_colourmap = cm.get_cmap('copper')
+# bat_colourmap = cm.get_cmap('winter')
+# g_color = pv_colourmap(range(0,256,int(np.ceil(256/len(solar)))))
+# l_color = load_colourmap(range(0,256,int(np.ceil(256/1))))
+# s_color = bat_colourmap(range(0,256,int(np.ceil(256/len(storage)))))
+#
+#
+# # plot breakdown of asset contribution to net load
+# fig, ax1 = plt.subplots(figsize=(15,7))
+# ax1.axhline(y = 0, color = 'black', linewidth = 1.3, alpha = .7)
+# ax1.stackplot(date_index, g_lis, colors=g_color, alpha=0.5, labels=g_labels)
+# ax1.stackplot(date_index, load_profile_year, colors=l_color, alpha=0.5, labels=['Demand Load'])
+# ax1.stackplot(date_index, s_lis, colors=s_color, alpha=0.5, labels=s_labels)
+#
+# ax1.plot(net_profile_year, '--r', label='Net Load')
+# ax1.set_ylabel("Energy (MWh)")
+# ax1.set_xlabel("Monthly period")
+# ax1.set_title("Energy State of Assets over Five Years")
+# ax1.legend()
+# plt.show()
 
-net_profile = net_profile[:-1195].reshape(-1,1440).sum(axis=1)
-load_profile = load_profile[:-1195].reshape(-1,1440).sum(axis=1)
-generation_profile = generation_profile[:-1195].reshape(-1,1440).sum(axis=1)
-storage_profile = storage_profile[:-1195].reshape(-1,1440).sum(axis=1)
+#
+#
+# Short Term Vis
+# winter
+start = 48*350
+day = 48
+net_profile_day = net_profile[start:start+day]
+load_profile_day = load_profile[start:start+day]
+g_lis_day =[]
+for i in generation_profile_lis:
+    k = i['profile']['Energy'].to_numpy()
+    g_lis_day.append(k[start:start+day])
+s_lis_day = []
+for i in storage_profile_lis:
+    k = i['profile']
+    s_lis_day.append(k[start:start+day])
 
-fig, ax1 = plt.subplots(figsize=(15,7))
-ax1.stackplot(np.arange(len(net_profile)), generation_profile, colors='r', alpha=0.5, labels='Generation')
-ax1.stackplot(np.arange(len(net_profile)), -storage_profile, colors='b', alpha=0.5, labels='Storage')
-ax1.stackplot(np.arange(len(net_profile)), -load_profile, colors='g', alpha=0.5, labels='Storage')
-ax1.plot(net_profile, '--r', label='Net Load')
-ax1.set_ylabel("Energy (MWh)")
-ax1.set_xlabel("Monthly period")
-ax1.set_title("Energy State of Assets over 5 years")
-ax1.legend()
+date_index = np.arange(48)
+pv_colourmap = cm.get_cmap("Wistia")
+load_colourmap = cm.get_cmap('copper')
+bat_colourmap = cm.get_cmap('winter')
+g_color = pv_colourmap(range(0,256,int(np.ceil(256/len(solar)))))
+l_color = load_colourmap(range(0,256,int(np.ceil(256/1))))
+s_color = bat_colourmap(range(0,256,int(np.ceil(256/len(storage)))))
+fig, ax2 = plt.subplots(figsize=(15,7))
+ax2.axhline(y = 0, color = 'black', linewidth = 1.3, alpha = .7)
+ax2.stackplot(date_index, g_lis_day, colors=g_color, alpha=0.5, labels=g_labels)
+ax2.stackplot(date_index, load_profile_day, colors=l_color, alpha=0.5, labels=['Demand Load'])
+ax2.stackplot(date_index, s_lis_day, colors=s_color, alpha=0.5, labels=s_labels)
+ax2.plot(net_profile_day, '--r', label='Net Load')
+ax2.set_xticks([0,6,12,18,24,30,36,42,48])
+ax2.set_xticklabels(['00:00','03:00','06:00','09:00','12:00','15:00','18:00','21:00','00:00'],fontsize = 'small')
+ax2.set_ylabel("Energy (MWh)")
+ax2.set_xlabel("Half-hourly period")
+ax2.set_title("Energy State of Assets over a Typical Summer Day")
+ax2.legend()
 plt.show()
+
+
+
+
+
+
+
+# grid search 2d test
 #
-plt.plot(storage_profile)
-#
-# #grid search 2d test
-# # #Run
 # solar_ini = 0
-# storage_ini = 0
+# wind_ini = 0
+# storage_ini = 2
 # # (Solar MW Storage MW)
 #
 # # 4 setting
-# solar_search = list(range(solar_ini, solar_ini + 60, 2))
-# storage_search_power = list(range(storage_ini, storage_ini + 100, 3))
-# # nplis = op.grid_search_2d(solar_search,storage_search_power,load=True,duration=5)
-# # np.save('Result/2d_search_nplis_131.npy', nplis)
+# solar_search = list(range(solar_ini, solar_ini + 50, 2))
+# wind_search = list(range(wind_ini, wind_ini + 6, 1))
+# storage_search = list(range(storage_ini, storage_ini + 20, 2))
+# # net_loads,net_costs = op.GridSearch(solar_search,wind_search,storage_search)
+# # #
+# # np.save('net_cost2',net_costs)
+# net_costs = np.load('net_cost2.npy')
 #
-# nplis = np.load('Result/2d_search_nplis_131.npy')
-# ta = nplis.sum(axis=2)
-# money_lis = []
-# pos_nplis = np.maximum(nplis, 0)
-# neg_nplis = np.minimum(nplis, 0)
-# pa = pos_nplis.sum(axis=2)
-# na = neg_nplis.sum(axis=2)
-#
-# x = np.array(solar_search)
-# y = np.array(storage_search_power).T
-# X, Y = np.meshgrid(y, x)
-#
-# fc = np.zeros(X.shape)
-# for i in range(pa.shape[0]):
-#     for j in range(pa.shape[1]):
-#         fc[i][j] = na[i][j] * 90 - pa[i][j] * (160+309) - 4400*2*solar_search[i] - 6000*2*storage_search_power[j]
-#
-# fc_norm = fc/np.linalg.norm(fc)
-# # pa_norm = -pa/np.linalg.norm(-pa)
-# #
-# # eva = 0.5*fc_norm+0.5*pa_norm
-#
-# plt.rcParams.update({'font.size': 12})
-# fig = plt.figure(figsize=(14, 9))
-# ax = plt.axes(projection='3d')
-# ax.plot_surface(X,Y,fc,rstride = 1, cstride = 1,cmap='rainbow')
-# ax.view_init(45,20)
-# ax.set_xlabel('Storage Power Capacity (MW)')
-# ax.set_ylabel('Generation Power Capacity (MW)')
-# ax.set_zlabel('Normalized Financial Cost')
-# ax.set_title('2D Gird Search with Integrated Financial - Energy Deficiency Metric')
-#
+# fig, ax = plt.subplots(figsize=(15,7))
+# ax.plot(range(solar_ini, solar_ini + 50, 2), net_costs[:,5,:])
+# ax.set_xlabel("Solar Panel Power Capacity (MW)")
+# ax.set_ylabel("Annual Integrated System Cost (£)")
+# ax.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=4, title="Battery Power Capacity (MW)")
+# #ax.set_ybound(0)
 # plt.show()
-# plt.savefig('primitive_2d_grid_search.jpg')
-#
-# idx = np.unravel_index(fc.argmax(), fc.shape)
-# print(X[idx],Y[idx],idx)
-# print(X,Y,fc)
-
-
-
-# solar_ini = 16.8
-# wind_ini = 13.8
-# storage_power_ini = 11
-# storage_energy_ini = 113
-# solar_range = [0,50]
-# wind_range = [0,50]
-# storage_power_range = [0,80]
-# storage_energy_range = [0,320]
-# # [solar_lis,wind_lis,storage_plis,storage_elis,metric_lis] = op.gradient_ascent(solar_ini,wind_ini,storage_power_ini,storage_energy_ini,solar_range,wind_range,storage_power_range,storage_energy_range,info='list')
-# # np.save('Result/ga_solar.npy', np.array(solar_lis))
-# # np.save('Result/ga_wind.npy', np.array(wind_lis))
-# # np.save('Result/ga_stp.npy', np.array(storage_plis))
-# # np.save('Result/ga_ste.npy', np.array(storage_elis))
-# # np.save('Result/ga_mtc.npy', np.array(metric_lis))
-# # # best_res = op.random_ga(solar_range,wind_range,storage_power_range,storage_energy_range)
-# # # print(best_res)
-#
-# solar_lis = np.load('Result/ga_solar.npy')
-# wind_lis = np.load('Result/ga_wind.npy')
-# storage_plis = np.load('Result/ga_stp.npy')
-# storage_elis = np.load('Result/ga_ste.npy')
-# metric_lis = np.load('Result/ga_mtc.npy')
 #
 # fig, ax1 = plt.subplots(figsize=(15,7))
-# ax1.plot(solar_lis, 'r', label='Solar')
-# ax1.plot(wind_lis,'b',label='Wind')
-# ax1.plot(storage_plis,'g',label='Storage')
-# ax1.set_ylabel("Power Capacity (MW)")
-# ax1.set_xlabel("Iteration")
-# ax1.set_title("Setting Refinement")
-# ax1.legend()
+# ax1.plot(range(wind_ini, wind_ini + 6, 1), net_costs[0,:,:])
+# ax1.set_xlabel("No. of Wind Turbines")
+# ax1.set_ylabel("Annual Integrated System Cost (£)")
+# ax1.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=1, title="Battery Power Capacity (MW)")
+# #ax.set_ybound(0)
 # plt.show()
 #
-# # fig, ax2 = plt.subplots(figsize=(15,7))
-# # ax2.plot(metric_lis, 'r', label='Solar')
-# # ax2.set_ylabel("Metric Integrated Financial Revenue (p)")
-# # ax2.set_xlabel("Iteration")
-# # ax2.set_title("Setting Refinement")
-# # ax2.legend()
-# # plt.show()
+# print(net_costs.min(),net_costs.argmin())
+# index = np.where(net_costs==net_costs.max())
+# print(index)
+# print(solar_search[index[0][0]],wind_search[index[1][0]],storage_search[index[2][0]])
+# print(net_costs[0,0,9])
+
+
+# SGD
+# solar = [{'size':37.5,'type':'solar'},{'size':0,'type':'wind'}]
+# load = 3500
+# storage = [[20,80,'local']]
 #
-# fig, ax3 = plt.subplots(figsize=(15,7))
-# ax3.plot(storage_elis, 'r', label='Solar')
-# ax3.set_ylabel("Energy Capacity (MWh)")
-# ax3.set_xlabel("Iteration")
-# ax3.set_title("Setting Refinement")
-# ax3.legend()
+# theta = [solar,storage]
+#
+# gl, sl, log = op.SGD(theta)
+# solar_log = []
+# wind_log = []
+# for i in gl:
+#     solar_log.append(i[0]['size'])
+#     wind_log.append(i[1]['size']*2)
+# solar_log = np.array(solar_log)
+# wind_log = np.array(wind_log)
+# np.save('TestData/solar_log1',solar_log)
+# np.save('TestData/wind_log1',wind_log)
+# sp_log = []
+# se_log = []
+# for i in sl:
+#     sp_log.append(i[0][0])
+#     se_log.append(i[0][1])
+# sp_log=np.array(sp_log)
+# se_log=np.array(se_log)
+# np.save('TestData/sp_log1',sp_log)
+# np.save('TestData/se_log1',se_log)
+# res = np.array(log)
+# np.save('TestData/log1',res)
+#
+#
+# res = np.load('TestData/log1.npy')
+# solar_log = np.load('TestData/solar_log1.npy')
+# wind_log = np.load('TestData/wind_log1.npy')
+# sp_log = np.load('TestData/sp_log1.npy')
+# se_log = np.load('TestData/se_log1.npy')
+#
+# print(solar_log[-1],wind_log[-1],se_log[-1],sp_log[-1])
+# fig, ax1 = plt.subplots(figsize=(15,7))
+# ax1.plot(res,label='Integrated System Cost')
+# ax1.set_xlabel("No. Iteration")
+# ax1.set_ylabel("Annual Integrated System Cost (£)")
+# ax1.set_title('Training Cost Function')
+# plt.legend()
 # plt.show()
-print(solar_lis[-1]+wind_lis[-1],storage_plis[-1],storage_elis[-1])
+#
+#
+# plt.figure(figsize = (15, 7))
+# plt.subplot(211)
+# plt.plot(solar_log, linewidth=2, markersize=12,label='Solar')
+# plt.plot(wind_log, linewidth=2, markersize=12,label='Wind')
+# plt.plot(sp_log, linewidth=2, markersize=12,label='Storage')
+# plt.ylabel("Power Capacity (MW)")
+# plt.title("Training Asset Size")
+# plt.legend()
+# plt.subplot(212)
+# plt.plot(se_log, linewidth=2, markersize=12,label='Storage')
+# plt.xlabel("No.Iteration")
+# plt.ylabel("Energy Capacity (MWh)")
+# plt.legend()
+# plt.show()
+
