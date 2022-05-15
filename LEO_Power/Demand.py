@@ -3,7 +3,7 @@ import numpy as np
 import utils
 
 class Demand():
-    def __init__(self,duration=1,PVTcapacity=2):
+    def __init__(self,duration=1,nhousehold=3500,PVTcapacity=2):
         self.path = '.\Data\demand(noEV).csv'
         self.hw = '.\Data\DHW_HH2.csv'
         self.alle = '.\Data\HH_electricity.csv'
@@ -11,7 +11,7 @@ class Demand():
         self.sh = '.\Data\HH_spaceheating_heat.csv'
         self.PVT = '.\Data\solar.csv'
         self.duration = duration
-        self.nhousehold = 3500
+        self.nhousehold = nhousehold
         self.CopHotWater = 2.2
         self.CopSpaceHeating = 3.2
         self.PVTcapacity = PVTcapacity

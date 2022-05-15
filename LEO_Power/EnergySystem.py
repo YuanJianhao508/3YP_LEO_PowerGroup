@@ -19,7 +19,7 @@ class EnergySystem():
         self.net_load_profile = []
         self.sample_time = []
 
-    def simulate(self,info_select='net_load'):
+    def simulate(self,info_select='net_load',rhc=True):
 
         # detailed info
         generation_profile_lis = []
@@ -52,13 +52,19 @@ class EnergySystem():
         # positive net_nondispatchable_load means exist load, energy need
         for i in self.dispatchable:
             storage = StorageAsset(net_nondispatchable_load, i[0], i[1],i[2])
-            storage_profile = storage.get_smart_output()
+            if rhc:
+                storage_profile = storage.get_output()
+            else:
+                storage_profile = storage.get_output()
             net_nondispatchable_load = net_nondispatchable_load - storage_profile
             storage_profile_lis.append({'capacity:power/energy':[i[0],i[1]],'profile':storage_profile,'type':i[2]})
             print('storage',[i[0],i[1]], sum(storage_profile))
         #Market Simulation
         market = Market(net_nondispatchable_load,load_profile_lis,generation_profile_lis,storage_profile_lis,self.solar,self.dispatchable,self.simulation_duration)
-        metric = market.integrated_financial_cost()
+        if rhc:
+            metric = market.integrated_financial_cost()
+        else:
+            metric = market.integrated_financial_cost()
         print('System Cost', metric)
         self.generation_profile = generation_profile_lis
         self.storage_profile = storage_profile_lis

@@ -7,22 +7,28 @@ class Market():
         self.solar_profile = generation_profile_lis
         self.storage_profile = storage_profile_lis
         self.load_profile = load_profile_lis
-        self.net_load_profile = net_nondispatchable_load
+        self.net_load_profile = net_nondispatchable_load[:-1]
         self.generation = generation
         self.storage = storage
         # simulation duration consider it in NPV
         self.duration = duration
+        self.price = pd.read_csv('./Data/price.csv')
+        self.pimp_lis = np.array(self.price['pimp'])
+        self.pexp_lis = np.array(self.price['pexp'])
 
 
-    def integrated_financial_cost(self):
-        return self.running_cost()+self.installation_cost()
+    def integrated_financial_cost(self,rhc=True):
+            return self.running_cost(rhc)+self.installation_cost()
 
-    def running_cost(self):
-        posnp = sum(np.maximum(self.net_load_profile, 0))
-        negnp = sum(np.minimum(self.net_load_profile, 0))
-        financial_cost = negnp * 65 + posnp * 150
-        carbon_cost = posnp * 309
-        running_cost = financial_cost + carbon_cost
+    def running_cost(self,rhc):
+        if rhc:
+            running_cost = self.pimp_lis @ np.maximum(self.net_load_profile, 0) - self.pexp_lis @ np.minimum(self.net_load_profile, 0)
+        else:
+            posnp = sum(np.maximum(self.net_load_profile, 0))
+            negnp = sum(np.minimum(self.net_load_profile, 0))
+            financial_cost = negnp * 65 + posnp * 150
+            carbon_cost = posnp * 159
+            running_cost = financial_cost + carbon_cost
         return running_cost
 
     def installation_cost(self):

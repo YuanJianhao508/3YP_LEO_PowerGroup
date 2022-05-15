@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from GenerationAsset import GenerationAsset
 from Demand import Demand
@@ -44,10 +45,10 @@ def basic_simulation(load,solar,storage,duration):
     [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric] = LEO.simulate('all_detail')
     return [net_profile,load_profile_lis,generation_profile_lis,storage_profile_lis,metric]
 
-solar = [{'size':2,'type':'solarPVT'},{'size':11,'type':'solar'},{'size':5,'type':'wind'}]
+solar = [{'size':2,'type':'solarPVT'},{'size':14,'type':'solar'},{'size':5,'type':'wind'}]
 load = 3500
-power = 7.4
-energy = 32
+power = 12
+energy = 36
 storage = [[power,energy,'local']]
 g_labels = ['Rooftop PVT','Solar Farm PV','Wind']
 s_labels = ['Local Battery']
@@ -71,11 +72,14 @@ load_profile=np.concatenate([load_profile,load_profile[:48]])
 generation_profile=np.concatenate([generation_profile,generation_profile[:48]])
 netraw_profile = load_profile-generation_profile
 
-pimp = [2 for i in range(window)]
-pexp = [1 for i in range(window)]
-pfin = pexp[-1]
-pimp = dict(zip(sindex, pimp))
-pexp = dict(zip(sindex, pexp))
+price = pd.read_csv('./Data/price.csv')
+
+
+pimp_lis = np.array(price['pimp'])
+pexp_lis = np.array(price['pexp'])
+
+
+
 
 sout_lis = []
 state_lis = []
@@ -85,7 +89,17 @@ time = 1
 for i in tqdm(range(len(netraw_profile)-48)):
     try:
         horizon = netraw_profile[i:i+48]
-        # print(horizon)
+        pimp = pimp_lis[i:i+48]
+        pexp = pexp_lis[i:i+48]
+        pfin = pexp[-1]
+
+        # print(pimp)
+
+        pimp = dict(zip(sindex, pimp))
+        pexp = dict(zip(sindex, pexp))
+
+
+
 
         predgen = dict(zip(sindex, horizon))
 
@@ -142,8 +156,8 @@ for i in tqdm(range(len(netraw_profile)-48)):
     except:
         print("nmsl")
 
-np.save('TestData/sout_lis_3', sout_lis)
-np.save('TestData/state_lis_3', state_lis)
+np.save('TestData/sout_lis_f', sout_lis)
+np.save('TestData/state_lis_f', state_lis)
     # time += 1
     # if time == 48:
     #     net = horizon - sout

@@ -12,6 +12,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn, optim
 import pytorch_lightning as pl
+import Demand
 
 from GenerationAsset import GenerationAsset
 from Demand import Demand
@@ -223,7 +224,7 @@ def plot_hist(path):
     plt.show()
 
 
-def predict_all(target,window,mon,SequenceLength=100,path = './model/m-0.6836solar.pth'):
+def predict_all(target,window,mon,SequenceLength=100,path = './model/m-0.6836solar.pth',vis = True):
 
 
     weatherin = load_data()
@@ -266,29 +267,23 @@ def predict_all(target,window,mon,SequenceLength=100,path = './model/m-0.6836sol
     gt_cases = target_scaler.inverse_transform(gt.reshape(-1, 1)).flatten()
 
     #result plot
-    fig, ax1 = plt.subplots(figsize=(15, 7))
-    ax1.axhline(y=0, color='black', linewidth=1.3, alpha=.7)
-    ax1.plot(predicted_cases, linewidth=5, markersize=12,label='Prediction')
-    ax1.plot(gt_cases,linewidth=5, markersize=12,label='GroundTruth')
-    ax1.set_ylabel("Energy (MWh)")
-    ax1.set_xlabel("Half-hourly period over a week")
-    ax1.set_title("Solar Generation Prediction Over a Week")
-    ax1.legend()
-    plt.show()
-
-
-    return predicted_cases
+    if vis:
+        fig, ax1 = plt.subplots(figsize=(15, 7))
+        ax1.axhline(y=0, color='black', linewidth=1.3, alpha=.7)
+        ax1.plot(predicted_cases, linewidth=5, markersize=12,label='Prediction')
+        ax1.plot(gt_cases,linewidth=5, markersize=12,label='GroundTruth')
+        ax1.set_ylabel("Energy (MWh)")
+        ax1.set_xlabel("Half-hourly period over a week")
+        ax1.set_title("Solar Generation Prediction Over a Week")
+        ax1.legend()
+        plt.show()
+        return predicted_cases
+    else:
+        return predicted_cases,gt_cases
 
 # predict_all('solar_gen',336,24,100,'./model/m-0.6836solar.pth')
-plot_hist('./model/m-0.6836solar.pth')
+# plot_hist('./model/m-0.6836solar.pth')
 # 24
 # predict_all('wind_gen',336,51,100,'./model/m-3.6187wind.pth')
 # plot_hist('./model/m-3.6187wind.pth')
 # 51
-
-# def compare():
-#     k = {'size': 2, 'type': 'solarPVT'}
-#     load = Demand(1)
-#     load_profile = load.load_profile()
-#     # generation = GenerationAsset(k['size'],1,k['type'])
-#     # generation_profile = generation.load_profile()
