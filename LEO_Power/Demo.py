@@ -46,7 +46,7 @@ def basic_simulation(load,solar,storage,duration,rhc):
 # duration = 1
 
 # Final
-solar = [{'size':21,'type':'solar'},{'size':4.5,'type':'wind'}]
+solar = [{'size':18,'type':'solar'},{'size':4.5,'type':'wind'}]
 load = 3500
 storage = [[12.7,36,'local']]
 g_labels = ['Rooftop PVT','Solar Farm PV','Wind']
@@ -62,25 +62,33 @@ length = len(net_profile)
 interval = 1440
 mod = length%interval
 
-#
+net_ex = 0
+net_im = 0
+for i in net_profile:
+    if i >= 0:
+        net_im+=i
+    else:
+        net_ex+=i
+print("EXP：",net_ex)
+print("IMP：",net_im)
 #
 # Long-term Vis
-# g_lis =[]
-# for i in generation_profile_lis:
-#     # print(i)
-#     k = i['profile']['Energy'].to_numpy()
-#     # print(k)
-#     g_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
-# s_lis = []
-# for i in storage_profile_lis:
-#     k = -i['profile']
-#     s_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
-#
-#
-#
-#
-# net_profile_year = net_profile[:-mod].reshape(-1,interval).sum(axis=1)
-# load_profile_year = load_profile[:-mod].reshape(-1,interval).sum(axis=1)
+g_lis =[]
+for i in generation_profile_lis:
+    # print(i)
+    k = i['profile']['Energy'].to_numpy()
+    # print(k)
+    g_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
+s_lis = []
+for i in storage_profile_lis:
+    k = -i['profile']
+    s_lis.append(k[:-mod].reshape(-1,interval).sum(axis=1))
+
+
+
+
+net_profile_year = net_profile[:-mod].reshape(-1,interval).sum(axis=1)
+load_profile_year = load_profile[:-mod].reshape(-1,interval).sum(axis=1)
 #
 #
 # # print(load_profile_year)
@@ -166,42 +174,42 @@ mod = length%interval
 
 # grid search 2d test
 
-solar_ini = 0
-wind_ini = 0
-storage_ini = 2
-# (Solar MW Storage MW)
-
-# 4 setting
-solar_search = list(range(solar_ini, solar_ini + 50, 2))
-wind_search = list(range(wind_ini, wind_ini + 6, 1))
-storage_search = list(range(storage_ini, storage_ini + 20, 2))
-# net_loads,net_costs = op.GridSearch(solar_search,wind_search,storage_search)
-# #
-# np.save('net_cost2',net_costs)
-net_costs = np.load('./TestData/net_cost2.npy')
-
-fig, ax = plt.subplots(figsize=(15,7))
-ax.plot(range(solar_ini, solar_ini + 50, 2), net_costs[:,5,:])
-ax.set_xlabel("Solar Panel Power Capacity (MW)")
-ax.set_ylabel("Annual Integrated System Cost (£)")
-ax.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=4, title="Battery Power Capacity (MW)")
-#ax.set_ybound(0)
-plt.show()
-
-fig, ax1 = plt.subplots(figsize=(15,7))
-ax1.plot([0,1,2,3,4], net_costs[0,:-1,:])
-ax1.set_xlabel("No. of Wind Turbines")
-ax1.set_ylabel("Annual Integrated System Cost (£)")
-ax1.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=1, title="Battery Power Capacity (MW)")
-#ax.set_ybound(0)
-plt.show()
-
-print(net_costs.min(),net_costs.argmin())
-index = np.where(net_costs==net_costs.max())
-print(index)
-print(solar_search[index[0][0]],wind_search[index[1][0]],storage_search[index[2][0]])
-print(net_costs[0,0,9])
+# solar_ini = 0
+# wind_ini = 0
+# storage_ini = 2
+# # (Solar MW Storage MW)
 #
+# # 4 setting
+# solar_search = list(range(solar_ini, solar_ini + 50, 2))
+# wind_search = list(range(wind_ini, wind_ini + 6, 1))
+# storage_search = list(range(storage_ini, storage_ini + 20, 2))
+# # net_loads,net_costs = op.GridSearch(solar_search,wind_search,storage_search)
+# # #
+# # np.save('net_cost2',net_costs)
+# net_costs = np.load('./TestData/net_cost2.npy')
+#
+# fig, ax = plt.subplots(figsize=(15,7))
+# ax.plot(range(solar_ini, solar_ini + 50, 2), net_costs[:,5,:])
+# ax.set_xlabel("Solar Panel Power Capacity (MW)")
+# ax.set_ylabel("Annual Integrated System Cost (£)")
+# ax.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=4, title="Battery Power Capacity (MW)")
+# #ax.set_ybound(0)
+# plt.show()
+#
+# fig, ax1 = plt.subplots(figsize=(15,7))
+# ax1.plot([0,1,2,3,4], net_costs[0,:-1,:])
+# ax1.set_xlabel("No. of Wind Turbines")
+# ax1.set_ylabel("Annual Integrated System Cost (£)")
+# ax1.legend(labels=range(storage_ini, storage_ini + 20, 2), loc=1, title="Battery Power Capacity (MW)")
+# #ax.set_ybound(0)
+# plt.show()
+#
+# print(net_costs.min(),net_costs.argmin())
+# index = np.where(net_costs==net_costs.max())
+# print(index)
+# print(solar_search[index[0][0]],wind_search[index[1][0]],storage_search[index[2][0]])
+# print(net_costs[0,0,9])
+# #
 #
 # SGD
 # solar = [{'size':13,'type':'solar'},{'size':5,'type':'wind'}]

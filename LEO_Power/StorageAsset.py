@@ -44,7 +44,7 @@ class StorageAsset():
         return self.outpute
 
     def get_smart_output(self):
-        lp_sout = np.load('TestData/sout_lis.npy')
+        lp_sout = 1.5*np.load('TestData/sout_lis.npy')
         return lp_sout
 
 
